@@ -1,0 +1,76 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #181926;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #24263C;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.nav-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid #393c56;
+  border-radius: 6px;
+  color: #888f9e;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.nav-btn:hover {
+  color: #ffffff;
+  border-color: #475569;
+  background: rgba(255, 255, 255, 0.04);
+}
+.nav-btn[data-active='true'] {
+  color: #ffffff;
+  background: rgba(0, 108, 215, 0.15);
+  border-color: #006cd7;
+}
+
+.table-tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #888f9e;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: -1px;
+  padding: 8px 2px;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.table-tab:hover {
+  color: #ffffff;
+}
+.table-tab[data-active='true'] {
+  color: #ffffff;
+  border-bottom-color: #006cd7;
+}
+.table-tab .table-tab-count {
+  color: #006cd7;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.table-tab[data-active='false'] .table-tab-count {
+  color: #5c5f66;
+}
