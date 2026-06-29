@@ -48,7 +48,7 @@ export function GrainRiskAssessment({ activeTab, onTabChange }) {
   return (
     <Stack gap={8}>
       <Paper p="xl" radius={8} style={{ background: '#24263C', border: '1px solid #393c56' }}>
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
           <div>
             <img src={theiaLogo} alt="Theia" height={40} style={{ display: 'block' }} />
             <Text
@@ -166,15 +166,15 @@ function PortSection({ port, risk, counts, data }) {
           <TypeBadge color={RISK_COLORS[risk]}>{risk} RISK</TypeBadge>
       </Group>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <div style={{ flex: 1 }}><KpiCard label="Unattributed" value={counts.unattr} iconSrc={unattributedIcon} bg="#181926" /></div>
-        <div style={{ flex: 1 }}><KpiCard label="Dark" value={counts.dark} iconSrc={darkIcon} bg="#181926" /></div>
-        <div style={{ flex: 1 }}><KpiCard label="Light" value={counts.light} iconSrc={lightIcon} bg="#181926" /></div>
-        <div style={{ flex: 1 }}><KpiCard label="Total" value={counts.total} bg="#181926" /></div>
+      <div className="kpi-row kpi-row--4" style={{ marginBottom: 8 }}>
+        <KpiCard label="Unattributed" value={counts.unattr} iconSrc={unattributedIcon} bg="#181926" />
+        <KpiCard label="Dark" value={counts.dark} iconSrc={darkIcon} bg="#181926" />
+        <KpiCard label="Light" value={counts.light} iconSrc={lightIcon} bg="#181926" />
+        <KpiCard label="Total" value={counts.total} bg="#181926" />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-        <div style={{ flex: 2 }}>
+      <div className="map-chip">
+        <div className="map-chip__map">
           <DetectionMap
             data={data}
             viewState={portView}
@@ -183,7 +183,7 @@ function PortSection({ port, risk, counts, data }) {
             height="100%"
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="map-chip__side">
           <SatelliteChip detection={selected} />
         </div>
       </div>
@@ -303,10 +303,10 @@ function Methodology({ reportDate }) {
           marginTop: 12,
           border: '1px solid #393c56',
           borderRadius: 8,
-          overflow: 'hidden',
+          overflowX: 'auto',
         }}
       >
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', minWidth: 640, borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th style={headStyle}>Factor</th>

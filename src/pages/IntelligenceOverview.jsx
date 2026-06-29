@@ -71,7 +71,7 @@ export function IntelligenceOverview({ activeTab, onTabChange }) {
     <Stack gap={8}>
       {/* ── Header ── */}
       <Paper p="xl" radius={8} style={{ background: '#24263C', border: '1px solid #393c56' }}>
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
           <div>
             <img src={theiaLogo} alt="Theia" height={40} style={{ display: 'block' }} />
             <Text
@@ -130,18 +130,18 @@ export function IntelligenceOverview({ activeTab, onTabChange }) {
       {/* ── Weekly Detections (KPIs + map + chip + tables share one selection) ── */}
       <Paper p="md" radius={8} style={{ background: '#24263C', border: '1px solid #393c56' }}>
         {/* KPI Row */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}><KpiCard label="Spoofing Events" value={spoofing.length} iconSrc={spoofingIcon} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Spoofing Vessels" value={spoofVessels} iconSrc={spoofingIcon} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Dark Detections" value={dark.length} iconSrc={darkIcon} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Dark Vessels" value={darkVessels} iconSrc={darkIcon} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="STS Events" value={sts.length} iconSrc={stsIcon} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Unattr. Detections" value={unattributed.length} iconSrc={unattributedIcon} bg="#181926" /></div>
+        <div className="kpi-row">
+          <KpiCard label="Spoofing Events" value={spoofing.length} iconSrc={spoofingIcon} bg="#181926" />
+          <KpiCard label="Spoofing Vessels" value={spoofVessels} iconSrc={spoofingIcon} bg="#181926" />
+          <KpiCard label="Dark Detections" value={dark.length} iconSrc={darkIcon} bg="#181926" />
+          <KpiCard label="Dark Vessels" value={darkVessels} iconSrc={darkIcon} bg="#181926" />
+          <KpiCard label="STS Events" value={sts.length} iconSrc={stsIcon} bg="#181926" />
+          <KpiCard label="Unattr. Detections" value={unattributed.length} iconSrc={unattributedIcon} bg="#181926" />
         </div>
 
         {/* Main Overview Map + Satellite Chip */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'stretch', marginTop: 8 }}>
-          <div style={{ flex: 2 }}>
+        <div className="map-chip" style={{ marginTop: 8 }}>
+          <div className="map-chip__map">
             <DetectionMap
               multiLayer={overviewLayers}
               viewState={BLACK_SEA_VIEW}
@@ -150,7 +150,7 @@ export function IntelligenceOverview({ activeTab, onTabChange }) {
               height="100%"
             />
           </div>
-          <div style={{ flex: 1 }}>
+          <div className="map-chip__side">
             <SatelliteChip detection={selectedDetection} />
           </div>
         </div>
@@ -318,8 +318,8 @@ function BulkerSection({ title, count, data, markerType, columns, tableData }) {
 
   return (
     <MapSection title={title} count={count}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-        <div style={{ flex: 2 }}>
+      <div className="map-chip">
+        <div className="map-chip__map">
           <DetectionMap
             data={data}
             markerType={markerType}
@@ -328,7 +328,7 @@ function BulkerSection({ title, count, data, markerType, columns, tableData }) {
             height="100%"
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="map-chip__side">
           <SatelliteChip detection={selected} />
         </div>
       </div>
@@ -353,7 +353,7 @@ function FindingsGroup({ title, items }) {
     <Paper
       p="md"
       radius={8}
-      style={{ flex: 1, minWidth: 240, background: '#24263C', border: '1px solid #393c56' }}
+      style={{ background: '#24263C', border: '1px solid #393c56' }}
     >
       <Text size="xs" fw={700} c="white" tt="uppercase" style={{ letterSpacing: '0.06em' }}>
         {title}
@@ -407,7 +407,7 @@ function KeyFindings({
   const n = (v) => Number(v).toLocaleString();
 
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' }}>
+    <div className="findings-row">
       <FindingsGroup
         title="Key Findings — 7-Day Window"
         items={[

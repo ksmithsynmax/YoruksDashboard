@@ -107,3 +107,63 @@ body {
 .table-tab[data-active='false'] .table-tab-count {
   color: #5c5f66;
 }
+
+/* ── Responsive layout helpers ─────────────────────────────── */
+
+/* KPI rows: fixed columns on desktop, fewer as the viewport narrows. */
+.kpi-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(6, 1fr);
+}
+.kpi-row--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1024px) {
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .kpi-row--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .kpi-row,
+  .kpi-row--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Map + side panel: side-by-side on desktop, stacked on smaller screens. */
+.map-chip {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.map-chip__map {
+  flex: 2;
+  min-width: 0;
+}
+.map-chip__side {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 860px) {
+  .map-chip {
+    flex-direction: column;
+  }
+  .map-chip__map {
+    height: 340px;
+  }
+}
+
+/* Findings cards: equal-width row that wraps to fewer columns when tight. */
+.findings-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.findings-row > * {
+  flex: 1 1 240px;
+}
