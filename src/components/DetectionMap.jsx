@@ -1,11 +1,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Paper, Text } from '@mantine/core';
+import { Paper, Text, Checkbox } from '@mantine/core';
 import DeckGL from '@deck.gl/react';
 import { IconLayer } from '@deck.gl/layers';
 import { FlyToInterpolator, WebMercatorViewport } from '@deck.gl/core';
 import { Map } from 'react-map-gl/maplibre';
+import { Plus, Minus, X } from '@untitled-ui/icons-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import shipIcon from '../assets/Icons/ShipIcon.svg';
 
 import UnattributedRaw from '../assets/Icons/UnattributedIcon.svg?raw';
 import DarkRaw from '../assets/Icons/DarkIcon.svg?raw';
@@ -141,6 +143,36 @@ export function DetectionMap({
     setView(viewState);
   }, []);
 
+  const zoomBy = useCallback((delta) => {
+    const cur = viewRef.current;
+    setView({
+      ...cur,
+      zoom: Math.min(Math.max((cur.zoom ?? 6) + delta, 1), 18),
+      transitionDuration: 250,
+      transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
+    });
+  }, []);
+
+  const recenter = useCallback(() => {
+    setView({
+      ...autoViewState,
+      transitionDuration: 600,
+      transitionInterpolator: new FlyToInterpolator({ speed: 1.6 }),
+    });
+  }, [autoViewState]);
+
+  // Per-map detection-type filters (toggled via the ship/filter button).
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [hiddenKeys, setHiddenKeys] = useState(() => new Set());
+  const toggleKey = useCallback((k) => {
+    setHiddenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+  }, []);
+
   // When a detection is selected (e.g. from a table row) that belongs to this
   // map but is outside the current viewport, smoothly fly to it. If it's already
   // visible, leave the view as-is so clicking a visible marker doesn't jump.
@@ -179,16 +211,21 @@ export function DetectionMap({
     });
   }, [selected, data, multiLayer]);
 
-  // Legend entries for the detection types actually present on this map.
-  const legendItems = useMemo(() => {
+  // Detection type keys actually present on this map (drives legend + filters).
+  const presentKeys = useMemo(() => {
     const keys = new Set();
     if (multiLayer) {
       multiLayer.forEach((l) => { if (l.data && l.data.length) keys.add(l.type); });
     } else {
       data.forEach((d) => keys.add(d.detection_type || markerType || 'Unattributed'));
     }
-    return [...keys].map((k) => LEGEND[k]).filter(Boolean);
+    return [...keys].filter((k) => LEGEND[k]);
   }, [data, multiLayer, markerType]);
+
+  const legendItems = useMemo(
+    () => presentKeys.map((k) => ({ key: k, ...LEGEND[k] })),
+    [presentKeys]
+  );
 
   const handleClick = useCallback((info) => {
     if (info.object && onClick) {
@@ -200,15 +237,21 @@ export function DetectionMap({
   const deckLayers = useMemo(() => {
     const sources = multiLayer || [{ data, type: markerType || 'default' }];
 
+    // The filter key for a point: the layer type for multi-layer maps, else the
+    // record's own detection type (so single-data maps filter per record).
+    const keyOf = (d, sourceType) =>
+      sourceType && sourceType !== 'default'
+        ? sourceType
+        : (d.detection_type || markerType || 'Unattributed');
+
     // Find the selected detection within this map's own points (if present), so
     // the halo only shows on the map that actually contains it, anchored to that
     // point's real coordinates.
     let selectedPoint = null;
     const markerLayers = sources.map((source, i) => {
-      const pts = (source.data || []).map(d => ({
-        ...d,
-        _layerType: source.type,
-      }));
+      const pts = (source.data || [])
+        .map(d => ({ ...d, _layerType: source.type }))
+        .filter(d => !hiddenKeys.has(keyOf(d, source.type)));
       if (selected && !selectedPoint) {
         selectedPoint = pts.find(p => isSameDetection(p, selected)) || null;
       }
@@ -263,7 +306,7 @@ export function DetectionMap({
     });
 
     return [...markerLayers, haloLayer, selectedMarkerLayer];
-  }, [data, multiLayer, handleClick, selected, markerType]);
+  }, [data, multiLayer, handleClick, selected, markerType, hiddenKeys]);
 
   if (!data.length && !multiLayer?.some(l => l.data?.length)) {
     return (
@@ -306,6 +349,129 @@ export function DetectionMap({
       >
         <Map mapStyle={DARK_BASEMAP} attributionControl={false} />
       </DeckGL>
+
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 8,
+          right: 8,
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+        }}
+      >
+        <div className="map-ctrl-group">
+          <button type="button" className="map-ctrl-btn" aria-label="Zoom in" onClick={() => zoomBy(1)}>
+            <Plus width={18} height={18} />
+          </button>
+          <div className="map-ctrl-divider" />
+          <button type="button" className="map-ctrl-btn" aria-label="Zoom out" onClick={() => zoomBy(-1)}>
+            <Minus width={18} height={18} />
+          </button>
+        </div>
+        {presentKeys.length > 1 && (
+          <div className="map-ctrl-group" data-active={filtersOpen || undefined}>
+            <button
+              type="button"
+              className="map-ctrl-btn"
+              aria-label="Ship filters"
+              onClick={() => setFiltersOpen((o) => !o)}
+            >
+              <img src={shipIcon} alt="" width={18} height={18} style={{ display: 'block' }} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {filtersOpen && presentKeys.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            right: 50,
+            zIndex: 2,
+            width: 220,
+            background: '#24263C',
+            border: '1px solid #393c56',
+            borderRadius: 4,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 12px',
+              borderBottom: '1px solid #393c56',
+            }}
+          >
+            <span style={{ color: '#fff', fontWeight: 600, fontSize: 13 }}>Ship Filters</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => setHiddenKeys(new Set())}
+                style={{
+                  appearance: 'none',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#888f9e',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontFamily: 'inherit',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  padding: 0,
+                }}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                aria-label="Close filters"
+                onClick={() => setFiltersOpen(false)}
+                style={{
+                  appearance: 'none',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#888f9e',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                }}
+              >
+                <X width={16} height={16} />
+              </button>
+            </div>
+          </div>
+          <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {presentKeys.map((k) => {
+              const item = LEGEND[k];
+              return (
+                <label
+                  key={k}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+                >
+                  <Checkbox
+                    size="xs"
+                    color="#006CD7"
+                    checked={!hiddenKeys.has(k)}
+                    onChange={() => toggleKey(k)}
+                  />
+                  <img src={item.icon} alt="" style={{ height: 16, width: 'auto', display: 'block' }} />
+                  <span style={{ color: '#fff', fontSize: 13 }}>{item.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {legendItems.length > 0 && (
         <div

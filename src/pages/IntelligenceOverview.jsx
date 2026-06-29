@@ -9,6 +9,10 @@ import { SatelliteChip } from '../components/SatelliteChip';
 import { DisclaimerFooter } from '../components/DisclaimerFooter';
 import { ViewSwitcher } from '../components/ViewSwitcher';
 import theiaLogo from '../assets/TheiaLogo.svg';
+import darkIcon from '../assets/Icons/DarkIcon.svg';
+import unattributedIcon from '../assets/Icons/UnattributedIcon.svg';
+import spoofingIcon from '../assets/Icons/SpoofingPositionIcon.svg';
+import stsIcon from '../assets/Icons/STSDefault.svg';
 
 const DATASETS = [
   'weekly_spoofing_events',
@@ -111,16 +115,28 @@ export function IntelligenceOverview({ activeTab, onTabChange }) {
         </Group>
       </Paper>
 
+      {/* ── Daily Intelligence Assessment / Key Findings ── */}
+      <KeyFindings
+        spoofingEvents={spoofing.length}
+        spoofingVessels={spoofVessels}
+        darkDetections={dark.length}
+        darkVessels={darkVessels}
+        stsEvents={sts.length}
+        darkBulkers={darkBulkers.length}
+        unattrBulkers={unattr.length}
+        lightBulkers={lightBulkers.length}
+      />
+
       {/* ── Weekly Detections (KPIs + map + chip + tables share one selection) ── */}
       <Paper p="md" radius={8} style={{ background: '#24263C', border: '1px solid #393c56' }}>
         {/* KPI Row */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}><KpiCard label="Spoofing Events" value={spoofing.length} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Spoofing Vessels" value={spoofVessels} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Dark Detections" value={dark.length} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Dark Vessels" value={darkVessels} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="STS Events" value={sts.length} bg="#181926" /></div>
-          <div style={{ flex: 1 }}><KpiCard label="Unattr. Detections" value={unattributed.length} bg="#181926" /></div>
+          <div style={{ flex: 1 }}><KpiCard label="Spoofing Events" value={spoofing.length} iconSrc={spoofingIcon} bg="#181926" /></div>
+          <div style={{ flex: 1 }}><KpiCard label="Spoofing Vessels" value={spoofVessels} iconSrc={spoofingIcon} bg="#181926" /></div>
+          <div style={{ flex: 1 }}><KpiCard label="Dark Detections" value={dark.length} iconSrc={darkIcon} bg="#181926" /></div>
+          <div style={{ flex: 1 }}><KpiCard label="Dark Vessels" value={darkVessels} iconSrc={darkIcon} bg="#181926" /></div>
+          <div style={{ flex: 1 }}><KpiCard label="STS Events" value={sts.length} iconSrc={stsIcon} bg="#181926" /></div>
+          <div style={{ flex: 1 }}><KpiCard label="Unattr. Detections" value={unattributed.length} iconSrc={unattributedIcon} bg="#181926" /></div>
         </div>
 
         {/* Main Overview Map + Satellite Chip */}
@@ -329,6 +345,94 @@ function BulkerSection({ title, count, data, markerType, columns, tableData }) {
         />
       </div>
     </MapSection>
+  );
+}
+
+function FindingsGroup({ title, items }) {
+  return (
+    <Paper
+      p="md"
+      radius={8}
+      style={{ flex: 1, minWidth: 240, background: '#24263C', border: '1px solid #393c56' }}
+    >
+      <Text size="xs" fw={700} c="white" tt="uppercase" style={{ letterSpacing: '0.06em' }}>
+        {title}
+      </Text>
+      <Stack gap={14} mt={16}>
+        {items.map((item, i) => (
+          <Group key={i} gap={12} wrap="nowrap" align="center">
+            <div
+              style={{
+                width: 72,
+                flexShrink: 0,
+                padding: '10px 8px',
+                background: '#181926',
+                border: '1px solid #393c56',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: 800,
+                  color: 'white',
+                  lineHeight: 1,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {item.value}
+              </Text>
+            </div>
+            <Text size="xs" c="#888f9e" style={{ lineHeight: 1.4 }}>{item.label}</Text>
+          </Group>
+        ))}
+      </Stack>
+    </Paper>
+  );
+}
+
+function KeyFindings({
+  spoofingEvents,
+  spoofingVessels,
+  darkDetections,
+  darkVessels,
+  stsEvents,
+  darkBulkers,
+  unattrBulkers,
+  lightBulkers,
+}) {
+  const n = (v) => Number(v).toLocaleString();
+
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' }}>
+      <FindingsGroup
+        title="Key Findings — 7-Day Window"
+        items={[
+          { value: n(spoofingEvents), label: <>Spoofing events across {n(spoofingVessels)} unique vessels in the Black Sea &amp; Bosphorus</> },
+          { value: n(darkDetections), label: <>Dark vessel detections across {n(darkVessels)} unique vessels via satellite</> },
+          { value: n(stsEvents), label: 'AIS STS transfers detected across the region' },
+        ]}
+      />
+      <FindingsGroup
+        title="Grain Smuggling Risk — Single-Day Snapshot"
+        items={[
+          { value: n(155), label: 'Kerch Strait cargo detections (90–200m) — highest-activity zone' },
+          { value: n(49), label: "Novorossiysk — Russia's primary grain export port" },
+          { value: n(27), label: 'Mariupol (20) · Berdyansk (3) · Feodosia (4) — occupied-territory ports' },
+        ]}
+      />
+      <FindingsGroup
+        title="Bulker Detections — Single-Day Snapshot"
+        items={[
+          { value: n(darkBulkers), label: 'Dark bulkers (90–200m, AIS-off) across the Black Sea' },
+          { value: n(unattrBulkers), label: 'Unattributed bulkers (no vessel match) — SAR + optical' },
+          { value: n(lightBulkers), label: 'AIS-light bulkers (90–200m) broadcasting AIS' },
+        ]}
+      />
+    </div>
   );
 }
 

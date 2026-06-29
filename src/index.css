@@ -71,6 +71,39 @@ body {
   font-weight: 700;
   margin-left: 6px;
 }
+
+.map-ctrl-group {
+  background: #24263c;
+  border: 1px solid #393c56;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.map-ctrl-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  transition: background 120ms ease;
+}
+.map-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.map-ctrl-group[data-active] {
+  border-color: #006cd7;
+}
+.map-ctrl-divider {
+  height: 1px;
+  background: #393c56;
+}
 .table-tab[data-active='false'] .table-tab-count {
   color: #5c5f66;
 }

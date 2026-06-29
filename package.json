@@ -10,15 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^9.4.0",
-    "@mantine/hooks": "^9.4.0",
-    "@tabler/icons-react": "^3.44.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "@babel/runtime": "^7.29.7",
     "@deck.gl/core": "^9.1.0",
     "@deck.gl/layers": "^9.1.0",
     "@deck.gl/react": "^9.1.0",
+    "@mantine/core": "^9.4.0",
+    "@mantine/hooks": "^9.4.0",
+    "@tabler/icons-react": "^3.44.0",
+    "@untitled-ui/icons-react": "^0.1.4",
     "maplibre-gl": "^4.7.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "react-map-gl": "^7.1.8"
   },
   "devDependencies": {
