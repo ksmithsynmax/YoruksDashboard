@@ -180,7 +180,10 @@ export function IntelligenceOverview({ activeTab, onTabChange }) {
               bare
               data={buildSpoofingTable(spoofing)}
               columns={['Vessel', 'IMO', 'MMSI', 'Flag', 'Events', 'First Seen', 'Last Seen']}
-              onRowClick={(row) => setSelectedDetection(row)}
+              onRowClick={(row) => {
+                const e = row._event;
+                if (e) setSelectedDetection({ ...e, lat: e.latitude, lon: e.longitude, _layerType: 'spoofing' });
+              }}
               isRowActive={(row) =>
                 selectedDetection &&
                 String(row.MMSI) === String(selectedDetection.mmsi ?? selectedDetection.MMSI)
@@ -458,15 +461,17 @@ function buildSpoofingTable(events) {
 
   return Object.values(byVessel).map((v) => {
     const first = v.events[0];
-    const timestamps = v.events.map((e) => e.timestamp).filter(Boolean).sort();
+    const sorted = [...v.events].sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+    const latest = sorted[sorted.length - 1] || first;
     return {
       Vessel: first.name || first.synmax_ship_id?.slice(0, 8) || '—',
       IMO: first.imo || '—',
       MMSI: first.mmsi || '—',
       Flag: first.flag_short_code || '—',
       Events: v.events.length,
-      'First Seen': timestamps[0]?.slice(0, 10) || '—',
-      'Last Seen': timestamps[timestamps.length - 1]?.slice(0, 10) || '—',
+      'First Seen': sorted[0]?.timestamp?.slice(0, 10) || '—',
+      'Last Seen': latest?.timestamp?.slice(0, 10) || '—',
+      _event: latest,
     };
   }).sort((a, b) => b.Events - a.Events);
 }

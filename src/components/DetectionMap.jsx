@@ -176,11 +176,26 @@ export function DetectionMap({
   // When a detection is selected (e.g. from a table row) that belongs to this
   // map but is outside the current viewport, smoothly fly to it. If it's already
   // visible, leave the view as-is so clicking a visible marker doesn't jump.
+  //
+  // Only react to an actual *change* of selection — not to every render. (Some
+  // callers don't pass `data`, so the default `[]` is a fresh array each render
+  // and would otherwise re-fire this effect and snap the map back after panning.)
+  const lastFlownKey = useRef(null);
   useEffect(() => {
-    if (!selected) return;
+    if (!selected) {
+      lastFlownKey.current = null;
+      return;
+    }
     const lon = selected.lon ?? selected.longitude;
     const lat = selected.lat ?? selected.latitude;
     if (lon == null || lat == null) return;
+
+    const key =
+      selected.object_id ??
+      selected.event_id ??
+      `${lon},${lat},${selected.timestamp ?? ''}`;
+    if (key === lastFlownKey.current) return;
+    lastFlownKey.current = key;
 
     const all = multiLayer ? multiLayer.flatMap((l) => l.data || []) : data;
     if (!all.some((p) => isSameDetection(p, selected))) return;
