@@ -299,10 +299,19 @@ export function DetectionMap({
     if (!selectedPoint) return markerLayers;
 
     // Bottom-anchored pins have their body above the geo point, so nudge the halo
-    // up to center it on the marker body; center-anchored icons (STS) need no shift.
+    // toward the marker body to center it. Because the marker rotates to its
+    // heading (around the anchor), rotate that nudge by the same bearing so the
+    // halo stays on the body center. Center-anchored icons (spoofing/STS) need
+    // no shift. Screen axes: +x right, +y down; north (heading 0) points up.
     const icon = getIcon(selectedPoint);
     const bottomAnchored = icon.anchorY === icon.height;
-    const haloOffset = bottomAnchored ? [0, -MARKER_SIZE / 2] : [0, 0];
+    let haloOffset = [0, 0];
+    if (bottomAnchored) {
+      const heading = -markerAngle(selectedPoint); // back to compass bearing (deg)
+      const h = heading * (Math.PI / 180);
+      const r = MARKER_SIZE / 2;
+      haloOffset = [r * Math.sin(h), -r * Math.cos(h)];
+    }
     const getPosition = d => [d.lon ?? d.longitude ?? 0, d.lat ?? d.latitude ?? 0];
 
     // Draw the halo above the other markers, then re-draw the selected marker on
