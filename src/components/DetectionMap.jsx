@@ -75,6 +75,15 @@ function getIcon(d) {
   return TYPE_ICONS.Unattributed;
 }
 
+// Rotate vessel markers to their real heading. `heading` is a compass bearing
+// (degrees clockwise from north); the icon's bow points up (north) by default,
+// and deck.gl angles are counter-clockwise, so we negate. Spoofing/STS records
+// have no heading and stay upright.
+function markerAngle(d) {
+  const h = d.heading;
+  return typeof h === 'number' && !Number.isNaN(h) ? -h : 0;
+}
+
 // Match a selected detection against a map point. The selected object may be a
 // copy (e.g. a clicked marker) or a table row, so match on stable ids first.
 function isSameDetection(a, b) {
@@ -277,6 +286,7 @@ export function DetectionMap({
         getPosition: d => [d.lon ?? d.longitude ?? 0, d.lat ?? d.latitude ?? 0],
         getIcon: d => getIcon(d),
         getSize: MARKER_SIZE,
+        getAngle: d => markerAngle(d),
         sizeUnits: 'pixels',
         billboard: true,
         pickable: true,
@@ -315,6 +325,7 @@ export function DetectionMap({
       getPosition,
       getIcon: d => getIcon(d),
       getSize: MARKER_SIZE,
+      getAngle: d => markerAngle(d),
       sizeUnits: 'pixels',
       billboard: true,
       pickable: false,
