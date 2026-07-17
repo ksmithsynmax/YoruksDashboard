@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Paper, Text, Stack, Group, Divider, Modal } from '@mantine/core';
 import { TypeBadge } from './TypeBadge';
 
@@ -70,8 +70,15 @@ export function SatelliteChip({ detection, bare = false }) {
 
 function ChipImage({ detection }) {
   const [opened, setOpened] = useState(false);
+  // Many exported image_urls are expired session links that 404. Fall back to the
+  // "Image Unavailable" state if the image fails to load. Reset when the
+  // detection (and thus the URL) changes.
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setFailed(false);
+  }, [detection.image_url]);
 
-  if (detection.image_url) {
+  if (detection.image_url && !failed) {
     const name =
       detection.name ||
       detection.name_1 ||
@@ -83,6 +90,7 @@ function ChipImage({ detection }) {
           src={detection.image_url}
           alt=""
           onClick={() => setOpened(true)}
+          onError={() => setFailed(true)}
           style={{
             width: '100%',
             height: 200,
